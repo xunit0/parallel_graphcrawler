@@ -121,7 +121,7 @@ std::vector<std::vector<std::string>> bfs(CURL* curl, const std::string& start, 
 
     for (std::string& s : levels[d]) {
 
-        //create thread(s)
+
 
       try {
 	    if (debug)

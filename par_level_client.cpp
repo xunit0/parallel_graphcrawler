@@ -30,7 +30,7 @@ std::unordered_set<std::string> visited;
 std::mutex levels_m, visited_m;
 std::vector<std::thread> threads;
 
-bool debug = false;
+bool debug = true;
 
 
 // Updated service URL
@@ -108,7 +108,7 @@ std::vector<std::string> get_neighbors(const std::string& json_str) {
 }
 
 //thread function
-void check_node(std::string& s, int& d) {
+void check_node(std::string s, int d) {
 
     CURL* curl = curl_easy_init();
 
@@ -136,6 +136,7 @@ void check_node(std::string& s, int& d) {
         }
     } catch (const ParseException& e) {
         std::cerr<<"Error while fetching neighbors of: "<<s<<std::endl;
+        curl_easy_cleanup(curl);
         throw e;
     }
 
@@ -155,12 +156,21 @@ std::vector<std::vector<std::string>> bfs( const std::string& start, int depth) 
 
     levels.push_back({});
 
-    for (std::string& s : levels[d]) {
+      //const to throttle threads
+      const size_t th = 32;
 
-        //create thread(s)
-        threads.emplace_back(check_node, std::ref(s), std::ref(d));
+      // Make a copy before creating threads
+      //std::vector<std::string> current_level = levels[d];
 
-    }
+      for (const std::string& s : levels[d]) {
+
+          if (threads.size()==th) {
+              for (auto& thread : threads ) thread.join();
+              threads.clear();
+          }
+          threads.emplace_back(check_node, s, d);
+
+      }
 
     for (std::thread& th : threads) {
         th.join();
@@ -177,6 +187,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
     std::string start_node = argv[1];     // example "Tom%20Hanks"
     int depth;
     try {
@@ -192,8 +205,8 @@ int main(int argc, char* argv[]) {
 
 
     for (const auto& n : bfs(start_node, depth)) {
-      for (const auto& node : n)
-	std::cout << "- " << node << "\n";
+ //      for (const auto& node : n)
+	// std::cout << "- " << node << "\n";
       std::cout<<n.size()<<"\n";
     }
 
@@ -202,6 +215,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Time to crawl: "<<elapsed_seconds.count() << "s\n";
 
 
+    curl_global_cleanup();
 
 
     return 0;
