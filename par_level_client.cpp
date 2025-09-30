@@ -30,7 +30,7 @@ std::unordered_set<std::string> visited;
 std::mutex levels_m, visited_m;
 std::vector<std::thread> threads;
 
-bool debug = true;
+bool debug = false;
 
 
 // Updated service URL
@@ -205,8 +205,8 @@ int main(int argc, char* argv[]) {
 
 
     for (const auto& n : bfs(start_node, depth)) {
- //      for (const auto& node : n)
-	// std::cout << "- " << node << "\n";
+      for (const auto& node : n)
+	std::cout << "- " << node << "\n";
       std::cout<<n.size()<<"\n";
     }
 
