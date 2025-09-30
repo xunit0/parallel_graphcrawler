@@ -6,8 +6,8 @@
 #include <cstdlib>
 #include <curl/curl.h>
 #include <stdexcept>
-// #include "rapidjson/error/error.h"
-// #include "rapidjson/reader.h"
+#include "rapidjson/error/error.h"
+#include "rapidjson/reader.h"
 
 
 struct ParseException : std::runtime_error, rapidjson::ParseResult {
@@ -175,8 +175,9 @@ int main(int argc, char* argv[]) {
 
 
     for (const auto& n : bfs(curl, start_node, depth)) {
-      for (const auto& node : n)
-	std::cout << "- " << node << "\n";
+      for (const auto& node : n) {
+          std::cout << "- " << node << "\n";
+      }
       std::cout<<n.size()<<"\n";
     }
 

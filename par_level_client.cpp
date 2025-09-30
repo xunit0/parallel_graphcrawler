@@ -154,9 +154,10 @@ std::vector<std::vector<std::string>> bfs(CURL* curl, const std::string& start, 
 
     }
 
-      for (std::thread& th : threads) {
-          th.join();
-      }
+    for (std::thread& th : threads) {
+        th.join();
+    }
+      threads.clear();
   }
 
   return levels;
