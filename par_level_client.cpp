@@ -108,7 +108,14 @@ std::vector<std::string> get_neighbors(const std::string& json_str) {
 }
 
 //thread function
-void check_node(std::string& s, CURL* curl, int& d) {
+void check_node(std::string& s, int& d) {
+
+    CURL* curl = curl_easy_init();
+
+    if (!curl) {
+        std::cerr << "Failed to initialize CURL\n";
+        return;
+    }
 
     try {
         if (debug)
@@ -131,12 +138,13 @@ void check_node(std::string& s, CURL* curl, int& d) {
         std::cerr<<"Error while fetching neighbors of: "<<s<<std::endl;
         throw e;
     }
+
+    curl_easy_cleanup(curl);
+
 }
 
 // BFS Traversal Function
-std::vector<std::vector<std::string>> bfs(CURL* curl, const std::string& start, int depth) {
-
-
+std::vector<std::vector<std::string>> bfs( const std::string& start, int depth) {
 
   levels.push_back({start});
   visited.insert(start);
@@ -150,7 +158,7 @@ std::vector<std::vector<std::string>> bfs(CURL* curl, const std::string& start, 
     for (std::string& s : levels[d]) {
 
         //create thread(s)
-        threads.emplace_back(check_node, std::ref(s), curl, std::ref(d));
+        threads.emplace_back(check_node, std::ref(s), std::ref(d));
 
     }
 
@@ -178,17 +186,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    CURL* curl = curl_easy_init();
-    if (!curl) {
-        std::cerr << "Failed to initialize CURL\n";
-        return -1;
-    }
 
 
     const auto start{std::chrono::steady_clock::now()};
 
 
-    for (const auto& n : bfs(curl, start_node, depth)) {
+    for (const auto& n : bfs(start_node, depth)) {
       for (const auto& node : n)
 	std::cout << "- " << node << "\n";
       std::cout<<n.size()<<"\n";
@@ -198,7 +201,7 @@ int main(int argc, char* argv[]) {
     const std::chrono::duration<double> elapsed_seconds{finish - start};
     std::cout << "Time to crawl: "<<elapsed_seconds.count() << "s\n";
 
-    curl_easy_cleanup(curl);
+
 
 
     return 0;
