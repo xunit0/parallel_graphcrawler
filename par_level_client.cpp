@@ -157,14 +157,14 @@ std::vector<std::vector<std::string>> bfs( const std::string& start, int depth) 
     levels.push_back({});
 
       //const to throttle threads
-      const size_t th = 32;
+      const size_t K = 48;
 
       // Make a copy before creating threads
       //std::vector<std::string> current_level = levels[d];
 
       for (const std::string& s : levels[d]) {
 
-          if (threads.size()==th) {
+          if (threads.size()==K) {
               for (auto& thread : threads ) thread.join();
               threads.clear();
           }
